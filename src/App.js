@@ -1,41 +1,35 @@
 import { useState } from "react";
+import { useGeolocation } from "./useGeolocation";
 
 // "I am using OpenStreetMap location"
 
 function App() {
   const [countClicks, setCountClicks] = useState(0);
-  const [userLocation, setUserLocation] = useState(null);
-  const [error, setError] = useState(null);
+
+  const { userLocation, isLoading, error, getPosition } = useGeolocation();
 
   function handleCountClick() {
-    setCountClicks((c) => c + 1);
-    getUserLocation();
-  }
-
-  function getUserLocation() {
-    if (navigator.geolocation) {
-      // console.log("Allowed Geolocation");
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ latitude, longitude });
-        },
-        (error) => {
-          setError("User denied Geolocation");
-        }
-      );
-    } else {
-      console.log("Geolocation NOT SUPPORTED");
-    }
+    setCountClicks((count) => count + 1);
+    getPosition();
   }
 
   return (
     <div className="App">
-      <button onClick={handleCountClick}>Get my position</button>
+      <button onClick={handleCountClick} disabled={isLoading}>
+        Get my position
+      </button>
+      {isLoading && <p>Loading...</p>}
       {error && <p>{error}</p>}
-      {userLocation && (
+      {userLocation && !isLoading && (
         <p>
-          Your GPS position: {userLocation.latitude}, {userLocation.longitude}
+          Your GPS position:{" "}
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={`https://www.openstreetmap.org/#map=16/${userLocation.latitude}/${userLocation.longitude}`}
+          >
+            {userLocation.latitude}, {userLocation.longitude}
+          </a>
         </p>
       )}
       <p>You requested position {countClicks} times</p>
